@@ -1,0 +1,5 @@
+#Çatı Çalışma mantığı.
+1.adım route
+2. controller
+3.services
+4.model
