@@ -9,12 +9,12 @@ const router = express.Router();
 router.get("/", Brands.read);
 router.route("/").post(validate(BrandValidation.create), Brands.create);
 router.route("/:id").delete(Checker.IdChecker, Brands.deleted);
-
+router.route("/:id").get(Checker.IdChecker, Brands.readOne);
+router.route("/:id").patch(Checker.IdChecker, validate(BrandValidation.update), Brands.update);
 
 module.exports = router;
 
 /*
-router.route("/:id").patch(Checker.IdChecker, Authentication.authenticated, validate(UserValidation.update), Users.update);
 router.route("/login").post(validate(UserValidation.login), Users.login);
 router.route("/reset-password").post(validate(UserValidation.resetPassword), Users.resetPassword);
 router.route("/change-password").post(Authentication.authenticated, Users.changePassword);

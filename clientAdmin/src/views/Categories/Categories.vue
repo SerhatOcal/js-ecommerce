@@ -6,167 +6,99 @@
 				<Toolbar class="mb-4">
 					<template v-slot:start>
 						<div class="my-2">
-							<Button label="New" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
-							<Button label="Delete" icon="pi pi-trash" class="p-button-danger" @click="confirmDeleteSelected" :disabled="!selectedProducts || !selectedProducts.length" />
+                            <router-link to="/brands/add">
+							<Button label="Marka Ekle" icon="pi pi-plus" class="p-button-success mr-2"/>
+                            </router-link>
+							<Button label="Sil" icon="pi pi-trash" class="p-button-danger" @click="confirmDeleteSelectedAll" :disabled="!selectedBrands || !selectedBrands.length" />
 						</div>
-					</template>
-
-					<template v-slot:end>
-						<FileUpload mode="basic" accept="image/*" :maxFileSize="1000000" label="Import" chooseLabel="Import" class="mr-2 inline-block" />
-						<Button label="Export" icon="pi pi-upload" class="p-button-help" @click="exportCSV($event)"  />
 					</template>
 				</Toolbar>
 
-				<DataTable ref="dt" :value="products" v-model:selection="selectedProducts" dataKey="id" :paginator="true" :rows="10" :filters="filters"
-							paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown" :rowsPerPageOptions="[5,10,25]"
-							currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products" responsiveLayout="scroll">
+				<DataTable
+                    class="p-datatable-customers"
+                    ref="dt" 
+                    dataKey="id"
+                    currentPageReportTemplate=" Kayıt Sayısı {totalRecords} " 
+                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown" 
+                    v-model:selection="selectedBrands" 
+                    :value="brands" 
+                    :paginator="true" 
+                    :rows="10" 
+                    :filters="filters"
+                    :rowsPerPageOptions="[5,10,25,50,100,200]"
+                    responsiveLayout="scroll">
 					<template #header>
 						<div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-							<h5 class="m-0">Manage Products</h5>
+                            <h5 class="m-0">Markalar</h5>
 							<span class="block mt-2 md:mt-0 p-input-icon-left">
                                 <i class="pi pi-search" />
-                                <InputText v-model="filters['global'].value" placeholder="Search..." />
+                                <InputText v-model="filters['name'].value" placeholder="Ara..." />
                             </span>
 						</div>
 					</template>
 
 					<Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
-					<Column field="code" header="Code" :sortable="true">
+					<Column field="id" header="ID" :sortable="true">
 						<template #body="slotProps">
-							<span class="p-column-title">Code</span>
-							{{slotProps.data.code}}
-						</template>
-					</Column>
-					<Column field="name" header="Name" :sortable="true">
-						<template #body="slotProps">
-							<span class="p-column-title">Name</span>
-							{{slotProps.data.name}}
+							<span class="p-column-title">ID</span>
+							{{slotProps.data.id}}
 						</template>
 					</Column>
 					<Column header="Image">
 						<template #body="slotProps">
-							<span class="p-column-title">Image</span>
-							<img :src="'images/product/' + slotProps.data.image" :alt="slotProps.data.image" class="shadow-2" width="100" />
+							<img v-if="slotProps.data.image_name" :src="'http://localhost:3000/uploads/images/brands/' + slotProps.data.image_name" :alt="slotProps.data.image_name" class="shadow-2" width="100" />
+                            <i v-else class="pi pi-image" style="font-size:2rem"></i>
+                        </template>
+					</Column>
+                    <Column field="markaAdi" header="MARKA ADI" :sortable="true">
+						<template #body="slotProps">
+							{{slotProps.data.name}}
 						</template>
 					</Column>
-					<Column field="price" header="Price" :sortable="true">
+                    <Column field="siraNo" header="SIRA NO" :sortable="true">
+                        <template #body="slotProps">
+							{{slotProps.data.sort}}
+						</template>
+                    </Column>
+					<Column field="status" header="DURUMU" :sortable="true">
 						<template #body="slotProps">
-							<span class="p-column-title">Price</span>
-							{{formatCurrency(slotProps.data.price)}}
+                            <span :class="slotProps.data.status ? 'p-button p-button-outlined p-button-success' : 'p-button p-button-outlined p-button-danger'">{{slotProps.data.status ? 'Aktif' : 'Pasif'}}</span>
 						</template>
 					</Column>
-					<Column field="category" header="Category" :sortable="true">
+                    <Column field="updatedAt" header="GÜNCELLENME">
 						<template #body="slotProps">
-							<span class="p-column-title">Category</span>
-							{{formatCurrency(slotProps.data.category)}}
+                            {{this.moment(slotProps.data.updatedAt).format('L LT')}}
 						</template>
 					</Column>
-					<Column field="rating" header="Reviews" :sortable="true">
+					<Column field="islemler" header="İŞLEMLER">
 						<template #body="slotProps">
-							<span class="p-column-title">Rating</span>
-							<Rating :modelValue="slotProps.data.rating" :readonly="true" :cancel="false" />
-						</template>
-					</Column>
-					<Column field="inventoryStatus" header="Status" :sortable="true">
-						<template #body="slotProps">
-							<span class="p-column-title">Status</span>
-							<span :class="'product-badge status-' + (slotProps.data.inventoryStatus ? slotProps.data.inventoryStatus.toLowerCase() : '')">{{slotProps.data.inventoryStatus}}</span>
-						</template>
-					</Column>
-					<Column>
-						<template #body="slotProps">
-							<Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="editProduct(slotProps.data)" />
-							<Button icon="pi pi-trash" class="p-button-rounded p-button-warning" @click="confirmDeleteProduct(slotProps.data)" />
+                            <router-link :to="{ name: 'edit-brand', params: { id: slotProps.data.id } }">
+                                <Button icon="pi pi-pencil" class="p-button-outlined p-button-success mr-2"/>
+                            </router-link>
+							<Button icon="pi pi-trash" class="p-button-outlined p-button-danger" @click="confirmDeleteBrand(slotProps.data)" />
 						</template>
 					</Column>
 				</DataTable>
 
-				<Dialog v-model:visible="productDialog" :style="{width: '450px'}" header="Product Details" :modal="true" class="p-fluid">
-					<img :src="'images/product/' + product.image" :alt="product.image" v-if="product.image" width="150" class="mt-0 mx-auto mb-5 block shadow-2" />
-					<div class="field">
-						<label for="name">Name</label>
-						<InputText id="name" v-model.trim="product.name" required="true" autofocus :class="{'p-invalid': submitted && !product.name}" />
-						<small class="p-invalid" v-if="submitted && !product.name">Name is required.</small>
-					</div>
-					<div class="field">
-						<label for="description">Description</label>
-						<Textarea id="description" v-model="product.description" required="true" rows="3" cols="20" />
-					</div>
-
-					<div class="field">
-						<label for="inventoryStatus" class="mb-3">Inventory Status</label>
-						<Dropdown id="inventoryStatus" v-model="product.inventoryStatus" :options="statuses" optionLabel="label" placeholder="Select a Status">
-							<template #value="slotProps">
-								<div v-if="slotProps.value && slotProps.value.value">
-									<span :class="'product-badge status-' +slotProps.value.value">{{slotProps.value.label}}</span>
-								</div>
-								<div v-else-if="slotProps.value && !slotProps.value.value">
-									<span :class="'product-badge status-' +slotProps.value.toLowerCase()">{{slotProps.value}}</span>
-								</div>
-								<span v-else>
-									{{slotProps.placeholder}}
-								</span>
-							</template>
-						</Dropdown>
-					</div>
-
-					<div class="field">
-						<label class="mb-3">Category</label>
-						<div class="formgrid grid">
-							<div class="field-radiobutton col-6">
-								<RadioButton id="category1" name="category" value="Accessories" v-model="product.category" />
-								<label for="category1">Accessories</label>
-							</div>
-							<div class="field-radiobutton col-6">
-								<RadioButton id="category2" name="category" value="Clothing" v-model="product.category" />
-								<label for="category2">Clothing</label>
-							</div>
-							<div class="field-radiobutton col-6">
-								<RadioButton id="category3" name="category" value="Electronics" v-model="product.category" />
-								<label for="category3">Electronics</label>
-							</div>
-							<div class="field-radiobutton col-6">
-								<RadioButton id="category4" name="category" value="Fitness" v-model="product.category" />
-								<label for="category4">Fitness</label>
-							</div>
-						</div>
-					</div>
-
-					<div class="formgrid grid">
-						<div class="field col">
-							<label for="price">Price</label>
-							<InputNumber id="price" v-model="product.price" mode="currency" currency="USD" locale="en-US" />
-						</div>
-						<div class="field col">
-							<label for="quantity">Quantity</label>
-							<InputNumber id="quantity" v-model="product.quantity" integeronly />
-						</div>
+				<Dialog v-model:visible="deleteDialog" :style="{width: '450px'}" header="Bildirim" :modal="true">
+					<div class="flex align-items-center justify-content-center">
+						<i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
+						<span v-if="brand"><b>{{brand.name}}</b> Markayı silmek istediğinizden emin misiniz?</span>
 					</div>
 					<template #footer>
-						<Button label="Cancel" icon="pi pi-times" class="p-button-text" @click="hideDialog"/>
-						<Button label="Save" icon="pi pi-check" class="p-button-text" @click="saveProduct" />
+						<Button label="Vazgeç" icon="pi pi-times" class="p-button-text" @click="deleteDialog = false"/>
+						<Button label="Evet" icon="pi pi-check" class="p-button-text" @click="deleteBrand" />
 					</template>
 				</Dialog>
 
-				<Dialog v-model:visible="deleteProductDialog" :style="{width: '450px'}" header="Confirm" :modal="true">
+				<Dialog v-model:visible="deleteDialogAll" :style="{width: '450px'}" header="Bildirim" :modal="true">
 					<div class="flex align-items-center justify-content-center">
 						<i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-						<span v-if="product">Are you sure you want to delete <b>{{product.name}}</b>?</span>
+						<span v-if="brand">Seçilen ürünleri silmek istediğinizden emin misiniz?</span>
 					</div>
 					<template #footer>
-						<Button label="No" icon="pi pi-times" class="p-button-text" @click="deleteProductDialog = false"/>
-						<Button label="Yes" icon="pi pi-check" class="p-button-text" @click="deleteProduct" />
-					</template>
-				</Dialog>
-
-				<Dialog v-model:visible="deleteProductsDialog" :style="{width: '450px'}" header="Confirm" :modal="true">
-					<div class="flex align-items-center justify-content-center">
-						<i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-						<span v-if="product">Are you sure you want to delete the selected products?</span>
-					</div>
-					<template #footer>
-						<Button label="No" icon="pi pi-times" class="p-button-text" @click="deleteProductsDialog = false"/>
-						<Button label="Yes" icon="pi pi-check" class="p-button-text" @click="deleteSelectedProducts" />
+						<Button label="Vazgeç" icon="pi pi-times" class="p-button-text" @click="deleteDialogAll = false, selectedBrands=null"/>
+						<Button label="Evet" icon="pi pi-check" class="p-button-text" @click="deleteBrands" />
 					</template>
 				</Dialog>
 			</div>
@@ -177,120 +109,78 @@
 
 <script>
 import {FilterMatchMode} from 'primevue/api';
-import ProductService from '../../service/ProductService';
+import BrandService from '../../services/BrandService';
 
 export default {
 	data() {
 		return {
-			products: null,
-			productDialog: false,
-			deleteProductDialog: false,
-			deleteProductsDialog: false,
-			product: {},
-			selectedProducts: null,
+			brands: null,
+			brand: {},
 			filters: {},
+			selectedBrands: null,
+            brandService: new BrandService(),
 			submitted: false,
-			statuses: [
-				{label: 'INSTOCK', value: 'instock'},
-				{label: 'LOWSTOCK', value: 'lowstock'},
-				{label: 'OUTOFSTOCK', value: 'outofstock'}
-			]
+			deleteDialog: false,
+			deleteDialogAll: false,
 		}
 	},
-	productService: null,
 	created() {
-		this.productService = new ProductService();
 		this.initFilters();
 	},
 	mounted() {
-		this.productService.getProducts().then(data => this.products = data);
+		this.brandService.getBrands().then(data => this.brands = data);
 	},
 	methods: {
-		formatCurrency(value) {
-			if(value)
-				return value.toLocaleString('en-US', {style: 'currency', currency: 'USD'});
-			return;
+		confirmDeleteBrand(brand) {
+			this.brand = brand;
+			this.deleteDialog = true;
 		},
-		openNew() {
-			this.product = {};
-			this.submitted = false;
-			this.productDialog = true;
+		deleteBrand() {
+            this.brandService.deleteBrand(this.brand.id).then((response) => {
+                if(response.success){
+                    this.brands = this.brandService.getBrands().then(data => this.brands = data);
+                    this.$toast.add({severity:'success', summary: 'Başarılı', detail: response.message, life: 10000});
+                } else if(response.error) {
+                    this.$toast.add({severity:'error', summary: 'Hata', detail: response.error.message, life: 10000});
+                } else {
+                    this.$toast.add({severity:'error', summary: 'Hata', detail: response.errors[0].message, life: 10000});
+                }
+            }).finally(() => {
+                this.deleteDialog = false;
+            });
 		},
-		hideDialog() {
-			this.productDialog = false;
-			this.submitted = false;
+
+        confirmDeleteSelectedAll() {
+			this.deleteDialogAll = true;
 		},
-		saveProduct() {
-			this.submitted = true;
-			if (this.product.name.trim()) {
-			if (this.product.id) {
-				this.product.inventoryStatus = this.product.inventoryStatus.value ? this.product.inventoryStatus.value: this.product.inventoryStatus;
-				this.products[this.findIndexById(this.product.id)] = this.product;
-				this.$toast.add({severity:'success', summary: 'Successful', detail: 'Product Updated', life: 3000});
-				}
-				else {
-					this.product.id = this.createId();
-					this.product.code = this.createId();
-					this.product.image = 'product-placeholder.svg';
-					this.product.inventoryStatus = this.product.inventoryStatus ? this.product.inventoryStatus.value : 'INSTOCK';
-					this.products.push(this.product);
-					this.$toast.add({severity:'success', summary: 'Successful', detail: 'Product Created', life: 3000});
-				}
-				this.productDialog = false;
-				this.product = {};
-			}
+
+        deleteBrands() {
+            let count = 0;
+            this.selectedBrands.forEach((brand) => {
+                count++;
+                this.brandService.deleteBrand(brand.id).then((response) => {
+                    if(response.success){
+                        this.brands = this.brandService.getBrands().then(data => this.brands = data);
+                    } else if(response.error) {
+                        this.$toast.add({severity:'error', summary: 'Hata', detail: response.error.message, life: 10000});
+                    } else {
+                        this.$toast.add({severity:'error', summary: 'Hata', detail: response.errors[0].message, life: 10000});
+                    }
+                }).finally(() => {
+                    this.deleteDialogAll = false;
+                });
+            });
+            this.$toast.add({severity:'success', summary: 'Başarılı', detail: `${count} Kayıt Silindi`, life: 10000});
 		},
-		editProduct(product) {
-			this.product = {...product};
-			this.productDialog = true;
-		},
-		confirmDeleteProduct(product) {
-			this.product = product;
-			this.deleteProductDialog = true;
-		},
-		deleteProduct() {
-			this.products = this.products.filter(val => val.id !== this.product.id);
-			this.deleteProductDialog = false;
-			this.product = {};
-			this.$toast.add({severity:'success', summary: 'Successful', detail: 'Product Deleted', life: 3000});
-		},
-		findIndexById(id) {
-			let index = -1;
-			for (let i = 0; i < this.products.length; i++) {
-				if (this.products[i].id === id) {
-					index = i;
-					break;
-				}
-			}
-			return index;
-		},
-		createId() {
-			let id = '';
-			var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-			for ( var i = 0; i < 5; i++ ) {
-				id += chars.charAt(Math.floor(Math.random() * chars.length));
-			}
-			return id;
-		},
-		exportCSV() {
-			this.$refs.dt.exportCSV();
-		},
-		confirmDeleteSelected() {
-			this.deleteProductsDialog = true;
-		},
-		deleteSelectedProducts() {
-			this.products = this.products.filter(val => !this.selectedProducts.includes(val));
-			this.deleteProductsDialog = false;
-			this.selectedProducts = null;
-			this.$toast.add({severity:'success', summary: 'Successful', detail: 'Products Deleted', life: 3000});
-		},
+
 		initFilters() {
             this.filters = {
-                'global': {value: null, matchMode: FilterMatchMode.CONTAINS},
+                'name': {value: null, matchMode: FilterMatchMode.STARTS_WITH},
             }
         }
 	}
 }
+
 </script>
 
 <style scoped lang="scss">

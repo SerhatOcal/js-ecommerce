@@ -1,5 +1,5 @@
 <template>
-	<div class="grid crud-demo">
+	<div class="grid">
 		<div class="col-12">
 			<div class="card">
 				<Toast/>
@@ -15,8 +15,6 @@
 				</Toolbar>
 
 				<DataTable
-                    class="p-datatable-customers"
-                    ref="dt" 
                     dataKey="id"
                     currentPageReportTemplate=" Kayıt Sayısı {totalRecords} " 
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown" 
@@ -118,14 +116,13 @@ export default {
 			brand: {},
 			filters: {},
 			selectedBrands: null,
-            brandService: null,
+            brandService: new BrandService(),
 			submitted: false,
 			deleteDialog: false,
 			deleteDialogAll: false,
 		}
 	},
 	created() {
-		this.brandService = new BrandService();
 		this.initFilters();
 	},
 	mounted() {
@@ -137,9 +134,8 @@ export default {
 			this.deleteDialog = true;
 		},
 		deleteBrand() {
-            this.brandService.deleteBrands(this.brand.id).then((response) => {
+            this.brandService.deleteBrand(this.brand.id).then((response) => {
                 if(response.success){
-                    this.brands = this.brandService.getBrands().then(data => this.brands = data);
                     this.$toast.add({severity:'success', summary: 'Başarılı', detail: response.message, life: 10000});
                 } else if(response.error) {
                     this.$toast.add({severity:'error', summary: 'Hata', detail: response.error.message, life: 10000});
@@ -147,7 +143,8 @@ export default {
                     this.$toast.add({severity:'error', summary: 'Hata', detail: response.errors[0].message, life: 10000});
                 }
             }).finally(() => {
-			this.deleteDialog = false;
+                this.deleteDialog = false;
+                this.brandService.getBrands().then(data => this.brands = data);
             });
 		},
 
@@ -159,16 +156,16 @@ export default {
             let count = 0;
             this.selectedBrands.forEach((brand) => {
                 count++;
-                this.brandService.deleteBrands(brand.id).then((response) => {
-                    if(response.success){
-                        this.brands = this.brandService.getBrands().then(data => this.brands = data);
-                    } else if(response.error) {
+                this.brandService.deleteBrand(brand.id).then((response) => {
+                    if(response.error) {
                         this.$toast.add({severity:'error', summary: 'Hata', detail: response.error.message, life: 10000});
-                    } else {
+                    }
+                    if(response.errors){
                         this.$toast.add({severity:'error', summary: 'Hata', detail: response.errors[0].message, life: 10000});
                     }
                 }).finally(() => {
-                this.deleteDialogAll = false;
+                    this.deleteDialogAll = false;
+                    this.brandService.getBrands().then(data => this.brands = data);
                 });
             });
             this.$toast.add({severity:'success', summary: 'Başarılı', detail: `${count} Kayıt Silindi`, life: 10000});
@@ -181,8 +178,8 @@ export default {
         }
 	}
 }
+
 </script>
 
 <style scoped lang="scss">
-@import '../../assets/demo/badges.scss';
 </style>

@@ -53,6 +53,7 @@ const update = Joi.object({
     sort: Joi.optional(),
     slug: Joi.optional(),
     image_name: Joi.optional(),
+    image: Joi.optional(),
     meta_title: Joi.optional(),
     meta_description: Joi.optional(),
     meta_keywords: Joi.optional()

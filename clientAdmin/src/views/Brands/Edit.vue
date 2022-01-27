@@ -3,66 +3,79 @@
     <Breadcrumb :home="home" class="mb-3"></Breadcrumb>
     <div class="grid p-fluid">
 		<div class="col-6 col-offset-3">
-                <div class="card">
-                    <h5>Marka Ekle</h5>
-                    <div class="grid formgrid">
-                        <div class="col-12 mb-2 lg:col-12 lg:mb-0">
-                            <div class="field">
-                                <label for="markaAdi">Marka Adı {{id}}<small class="p-error">*</small></label>
-                                <InputText v-model.trim="brand.name" required="true" autofocus :class="{'p-invalid': submitted && !brand.name}"></InputText>
-                                <small class="p-error" v-if="submitted && !brand.name">Marka Adı boş bırakılamaz.</small>
+            <div class="card">
+                <h5>Marka Ekle</h5>
+                <div class="grid formgrid">
+                    <div class="col-12 mb-2 lg:col-12 lg:mb-0">
+                        <div class="field">
+                            <label for="markaAdi">Marka Adı<small class="p-error">*</small></label>
+                            <InputText v-model.trim="brand.name" required="true" autofocus :class="{'p-invalid': submitted && !brand.name}"></InputText>
+                            <small class="p-error" v-if="submitted && !brand.name">Marka Adı boş bırakılamaz.</small>
+                        </div>
+                    </div>
+                    <div class="col-3 mb-2 lg:col-3 lg:mb-0">
+                        <div class="field">
+                            <label for="siraNo">Sıra No </label>
+                            <InputNumber 
+                                :min="0"
+                                :useGrouping="false"
+                                mode="decimal" 
+                                v-model.number="brand.sort" 
+                                placeholder="999" 
+                                showButtons 
+                                buttonLayout="horizontal" 
+                                incrementButtonIcon="pi pi-plus" 
+                                decrementButtonIcon="pi pi-minus">
+                            </InputNumber>
+                        </div>
+                    </div>
+                    <div class="col-12 mb-2 lg:col-12 lg:mb-0 clear-fix">
+                        <div class="field">
+                            <label for="status">Durumu</label>
+                        </div>
+                        <InputSwitch v-model="brand.status" class="mb-3"></InputSwitch>
+                    </div>
+                    <div class="col-12 mb-2 lg:col-12 lg:mb-0 clear-fix">
+                        <div class="field">
+                            <label for="status">Resim Yükle</label>
+                            <FileUpload 
+                                :auto="true" 
+                                :customUpload=true
+                                :showUploadButton=false
+                                :showCancelButton=false
+                                chooseLabel="Dosya Seç" 
+                                @uploader="onUpload">
+                            </FileUpload>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-2 lg:col-6 lg:mb-0 clear-fix">
+                        <div class="field">
+                            <h6 for="status">Yüklü olan resim</h6>
+                            <div class="card">
+                                <Image :src="'http://localhost:3000/uploads/images/brands/' + brand.image_name" alt="Image" width="250" preview>
+                                    <template #indicator>
+                                        <i class="p-image-preview-icon pi pi-eye"></i>
+                                    </template>
+                                </Image>
                             </div>
                         </div>
-                        <div class="col-3 mb-2 lg:col-3 lg:mb-0">
-                            <div class="field">
-                                <label for="siraNo">Sıra No </label>
-                                <InputNumber 
-                                    :min="0"
-                                    :useGrouping="false"
-                                    mode="decimal" 
-                                    v-model.number="brand.sort" 
-                                    placeholder="999" 
-                                    showButtons 
-                                    buttonLayout="horizontal" 
-                                    incrementButtonIcon="pi pi-plus" 
-                                    decrementButtonIcon="pi pi-minus">
-                                </InputNumber>
+                    </div>
+                    <div class="col-12 mb-2 lg:col-12 lg:mb-0 clear-fix">
+                        <div class="formgroup-inline justify-content-end">
+                            <div class="field m-0 mr-2">
+                                <router-link to="/brands">
+                                    <Button label="Vazgeç" icon="pi pi-times" class="p-button-outlined p-button-help mr-2 mb-2"/>
+                                </router-link>
                             </div>
-                        </div>
-                        <div class="col-12 mb-2 lg:col-12 lg:mb-0 clear-fix">
-                            <div class="field">
-                                <label for="status">Durumu</label>
-                            </div>
-                            <InputSwitch v-model="brand.status" class="mb-3"></InputSwitch>
-                        </div>
-                        <div class="col-12 mb-2 lg:col-12 lg:mb-0 clear-fix">
-                            <div class="field">
-                                <label for="status">Resim Yükle</label>
-                                <FileUpload 
-                                    :auto="true" 
-                                    :customUpload=true
-                                    :showUploadButton=false
-                                    :showCancelButton=false
-                                    chooseLabel="Dosya Seç" 
-                                    @uploader="onUpload">
-                                </FileUpload>
-                            </div>
-                        </div>
-                        <div class="col-12 mb-2 lg:col-12 lg:mb-0 clear-fix">
-                            <div class="formgroup-inline justify-content-end">
-                                <div class="field m-0 mr-2">
-                                    <router-link to="/brands">
-                                        <Button label="Vazgeç" icon="pi pi-times" class="p-button-outlined p-button-help mr-2 mb-2"/>
-                                    </router-link>
-                                </div>
-                                <div class="field m-0 mr-2">
-                                    <Button label="Kaydet" icon="pi pi-check" class="p-button-outlined p-button-success mr-2 mb-2" :loading="loading" @click="save"/>
-                                </div>
+                            <div class="field m-0 mr-2">
+                                <Button label="Kaydet" icon="pi pi-check" class="p-button-outlined p-button-success mr-2 mb-2" :loading="loading" @click="save"/>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
         </div>
+        
 	</div>
 </template>
 
@@ -85,9 +98,10 @@ export default {
             id: this.$route.params.id,
         }
     },
-	mounted() {
-		this.brandService.getBrand(this.$route.params.id).then(data => this.brands = data);
-	},
+    mounted() {
+		this.brandService.getBrand(this.$route.params.id).then(data => this.brand = data);
+    },
+
     methods: {
         save() {
             this.submitted = true;
@@ -99,11 +113,12 @@ export default {
                 formData.append("status", this.brand.status);
                 formData.append("image", this.brand.image);
 
-                this.brandService.saveBrands(formData)
+                this.brandService.updateBrand(formData,this.brand.id)
                     .then((response) => {
                         console.log(response);
                         if(response.success){
                             this.$toast.add({severity:'success', summary: 'Başarılı', detail: response.message, life: 10000});
+                            this.brandService.getBrand(this.$route.params.id).then(data => this.brand = data);
                         } else if(response.error) {
                             this.$toast.add({severity:'error', summary: 'Hata', detail: response.error.message, life: 10000});
                         } else {

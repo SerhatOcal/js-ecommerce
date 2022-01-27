@@ -95,7 +95,7 @@ export default {
                 formData.append("status", this.brand.status);
                 formData.append("image", this.brand.image);
 
-                this.brandService.saveBrands(formData)
+                this.brandService.saveBrand(formData)
                     .then((response) => {
                         console.log(response);
                         if(response.success){
@@ -109,7 +109,6 @@ export default {
                         this.loading = false;
                     });
             }
-           
         },
 
         onUpload(event){

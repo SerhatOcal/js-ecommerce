@@ -5,6 +5,7 @@ import 'prismjs/themes/prism-coy.css';
 import './assets/styles/layout.scss';
 import './assets/demo/flags/flags.css';
 
+
 import { createApp, reactive } from 'vue';
 import router from './router';
 import App from './App.vue';
@@ -92,11 +93,11 @@ import Tree from 'primevue/tree';
 import TreeSelect from 'primevue/treeselect';
 import TreeTable from 'primevue/treetable';
 import TriStateCheckbox from 'primevue/tristatecheckbox';
+import Image from 'primevue/image'
 
 import CodeHighlight from './AppCodeHighlight';
 import BlockViewer from './BlockViewer';
 
-import axios from 'axios';
 import moment from 'moment';
 moment.locale('tr');
 
@@ -109,9 +110,7 @@ router.beforeEach(function(to, from, next) {
 const app = createApp(App);
 
 app.config.globalProperties.$appState   = reactive({ theme: 'lara-light-indigo', darkTheme: false });
-app.config.globalProperties.axios   = axios;
 app.config.globalProperties.moment  = moment;
-
 
 app.use(PrimeVue, { ripple: true, inputStyle: 'outlined' });
 app.use(ConfirmationService);
@@ -201,6 +200,7 @@ app.component('Tree', Tree);
 app.component('TreeSelect', TreeSelect);
 app.component('TreeTable', TreeTable);
 app.component('TriStateCheckbox', TriStateCheckbox);
+app.component('Image', Image);
 
 app.component('BlockViewer', BlockViewer);
 
