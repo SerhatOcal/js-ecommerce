@@ -9,20 +9,22 @@
                             <router-link to="/brands/add">
 							<Button label="Marka Ekle" icon="pi pi-plus" class="p-button-success mr-2"/>
                             </router-link>
-							<Button label="Sil" icon="pi pi-trash" class="p-button-danger" @click="confirmDeleteSelectedAll" :disabled="!selectedBrands || !selectedBrands.length" />
+							<Button label="Sil" icon="pi pi-trash" class="p-button-danger" @click="confirmDeleteSelectedAll()" :disabled="!data.selectedBrands || !data.selectedBrands.length" />
 						</div>
 					</template>
 				</Toolbar>
 
 				<DataTable
+                    class="p-datatable-customers"
+                    ref="dt" 
                     dataKey="id"
                     currentPageReportTemplate=" Kayıt Sayısı {totalRecords} " 
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown" 
-                    v-model:selection="selectedBrands" 
-                    :value="brands" 
+                    v-model:selection="data.selectedBrands" 
+                    :value="data.brands" 
                     :paginator="true" 
                     :rows="10" 
-                    :filters="filters"
+                    :filters="data.filters"
                     :rowsPerPageOptions="[5,10,25,50,100,200]"
                     responsiveLayout="scroll">
 					<template #header>
@@ -30,7 +32,7 @@
                             <h5 class="m-0">Markalar</h5>
 							<span class="block mt-2 md:mt-0 p-input-icon-left">
                                 <i class="pi pi-search" />
-                                <InputText v-model="filters['name'].value" placeholder="Ara..." />
+                                <InputText v-model="data.filters['name'].value" placeholder="Marka adına göre Ara..." />
                             </span>
 						</div>
 					</template>
@@ -78,108 +80,104 @@
 					</Column>
 				</DataTable>
 
-				<Dialog v-model:visible="deleteDialog" :style="{width: '450px'}" header="Bildirim" :modal="true">
+				<Dialog v-model:visible="data.deleteDialog" :style="{width: '450px'}" header="Bildirim" :modal="true">
 					<div class="flex align-items-center justify-content-center">
 						<i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-						<span v-if="brand"><b>{{brand.name}}</b> Markayı silmek istediğinizden emin misiniz?</span>
+						<span v-if="data.brand"><b>{{data.brand.name}}</b> Markayı silmek istediğinizden emin misiniz?</span>
 					</div>
 					<template #footer>
-						<Button label="Vazgeç" icon="pi pi-times" class="p-button-text" @click="deleteDialog = false"/>
-						<Button label="Evet" icon="pi pi-check" class="p-button-text" @click="deleteBrand" />
+						<Button label="Vazgeç" icon="pi pi-times" class="p-button-text" @click="data.deleteDialog = false"/>
+						<Button label="Evet" icon="pi pi-check" class="p-button-text" @click="deleteBrand()" />
 					</template>
 				</Dialog>
 
-				<Dialog v-model:visible="deleteDialogAll" :style="{width: '450px'}" header="Bildirim" :modal="true">
+				<Dialog v-model:visible="data.deleteDialogAll" :style="{width: '450px'}" header="Bildirim" :modal="true">
 					<div class="flex align-items-center justify-content-center">
 						<i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-						<span v-if="brand">Seçilen ürünleri silmek istediğinizden emin misiniz?</span>
+						<span v-if="data.brand">Seçilen ürünleri silmek istediğinizden emin misiniz?</span>
 					</div>
 					<template #footer>
-						<Button label="Vazgeç" icon="pi pi-times" class="p-button-text" @click="deleteDialogAll = false, selectedBrands=null"/>
-						<Button label="Evet" icon="pi pi-check" class="p-button-text" @click="deleteBrands" />
+						<Button label="Vazgeç" icon="pi pi-times" class="p-button-text" @click="data.deleteDialogAll = false, data.selectedBrands=null"/>
+						<Button label="Evet" icon="pi pi-check" class="p-button-text" @click="deleteBrands()" />
 					</template>
 				</Dialog>
 			</div>
 		</div>
 	</div>
-
 </template>
 
-<script>
+<script setup>
+import { onMounted, reactive } from 'vue';
 import {FilterMatchMode} from 'primevue/api';
 import BrandService from '../../services/BrandService';
+import {useToast} from 'primevue/usetoast';
 
-export default {
-	data() {
-		return {
-			brands: null,
-			brand: {},
-			filters: {},
-			selectedBrands: null,
-            brandService: new BrandService(),
-			submitted: false,
-			deleteDialog: false,
-			deleteDialogAll: false,
-		}
-	},
-	created() {
-		this.initFilters();
-	},
-	mounted() {
-		this.brandService.getBrands().then(data => this.brands = data);
-	},
-	methods: {
-		confirmDeleteBrand(brand) {
-			this.brand = brand;
-			this.deleteDialog = true;
-		},
-		deleteBrand() {
-            this.brandService.deleteBrand(this.brand.id).then((response) => {
-                if(response.success){
-                    this.$toast.add({severity:'success', summary: 'Başarılı', detail: response.message, life: 10000});
-                } else if(response.error) {
-                    this.$toast.add({severity:'error', summary: 'Hata', detail: response.error.message, life: 10000});
-                } else {
-                    this.$toast.add({severity:'error', summary: 'Hata', detail: response.errors[0].message, life: 10000});
-                }
-            }).finally(() => {
-                this.deleteDialog = false;
-                this.brandService.getBrands().then(data => this.brands = data);
-            });
-		},
+const brandService = new BrandService();
+const toast = useToast();
 
-        confirmDeleteSelectedAll() {
-			this.deleteDialogAll = true;
-		},
+const data = reactive({
+    brands: null,
+    brand: {},
+    filters: {},
+    selectedBrands: null,
+    submitted: false,
+    deleteDialog: false,
+    deleteDialogAll: false,
+});
 
-        deleteBrands() {
-            let count = 0;
-            this.selectedBrands.forEach((brand) => {
-                count++;
-                this.brandService.deleteBrand(brand.id).then((response) => {
-                    if(response.error) {
-                        this.$toast.add({severity:'error', summary: 'Hata', detail: response.error.message, life: 10000});
-                    }
-                    if(response.errors){
-                        this.$toast.add({severity:'error', summary: 'Hata', detail: response.errors[0].message, life: 10000});
-                    }
-                }).finally(() => {
-                    this.deleteDialogAll = false;
-                    this.brandService.getBrands().then(data => this.brands = data);
-                });
-            });
-            this.$toast.add({severity:'success', summary: 'Başarılı', detail: `${count} Kayıt Silindi`, life: 10000});
-		},
+onMounted(() => {
+    brandService.getBrands().then(response => data.brands = response);
+});
 
-		initFilters() {
-            this.filters = {
-                'name': {value: null, matchMode: FilterMatchMode.STARTS_WITH},
-            }
+const confirmDeleteBrand = (brand) => {
+    data.brand = brand;
+	data.deleteDialog = true;
+};
+
+const deleteBrand = () => {
+    brandService.deleteBrand(data.brand.id).then((response) => {
+        if(response.success){
+            toast.add({severity:'success', summary: 'Başarılı', detail: response.message, life: 10000});
+        } else if(response.error) {
+            toast.add({severity:'error', summary: 'Hata', detail: response.error.message, life: 10000});
+        } else {
+            toast.add({severity:'error', summary: 'Hata', detail: response.errors[0].message, life: 10000});
         }
-	}
+    }).finally(() => {
+        data.deleteDialog = false;
+        brandService.getBrands().then(response => data.brands = response);
+    });
+};
+
+const confirmDeleteSelectedAll = () => {
+    data.deleteDialogAll = true;
+};
+
+const deleteBrands = () => {
+    let count = 0;
+    data.selectedBrands.forEach((brand) => {
+        count++;
+        brandService.deleteBrand(brand.id).then((response) => {
+            if(response.error) {
+                toast.add({severity:'error', summary: 'Hata', detail: response.error.message, life: 10000});
+            }
+            if(response.errors){
+                toast.add({severity:'error', summary: 'Hata', detail: response.errors[0].message, life: 10000});
+            }
+        }).finally(() => {
+            data.deleteDialogAll = false;
+            brandService.getBrands().then(response => data.brands = response);
+        });
+    });
+    toast.add({severity:'success', summary: 'Başarılı', detail: `${count} Kayıt Silindi`, life: 10000});
+    count = 0;
+};
+
+const initFilters = () => {
+    data.filters = {
+        'name': {value: data.brand.name, matchMode: FilterMatchMode.STARTS_WITH},
+    }
 }
+initFilters();
 
 </script>
-
-<style scoped lang="scss">
-</style>
