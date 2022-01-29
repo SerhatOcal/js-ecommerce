@@ -3,7 +3,7 @@ const SequelizeSlugify = require("sequelize-slugify");
 const sequelize  = require("../loaders/database");
 const logger = require("../scripts/logger/Brands");
 
-const BrandSchema = sequelize.define("Brand", {
+const BrandSchema = sequelize.define("brands", {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,

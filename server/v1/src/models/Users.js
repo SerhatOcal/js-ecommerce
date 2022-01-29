@@ -2,7 +2,7 @@ const { DataTypes} = require("sequelize");
 const  sequelize  = require("../loaders/database");
 const logger = require("../scripts/logger/Users");
 
-const UserSchema = sequelize.define("User", {
+const UserSchema = sequelize.define("users", {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,

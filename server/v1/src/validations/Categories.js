@@ -18,7 +18,7 @@ const create = Joi.object({
             }
         });
         return errors;
-    }),
+		}),
   status: Joi.optional(),
   sort: Joi.optional(),
   slug: Joi.optional(),
