@@ -108,9 +108,9 @@
 
 <script setup>
 import { onMounted, reactive } from 'vue';
-import {FilterMatchMode} from 'primevue/api';
+import { FilterMatchMode } from 'primevue/api';
+import { useToast } from 'primevue/usetoast';
 import BrandService from '../../services/BrandService';
-import {useToast} from 'primevue/usetoast';
 
 const brandService = new BrandService();
 const toast = useToast();
