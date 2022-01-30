@@ -7,10 +7,9 @@ const Category = require("../controllers/CategoryController");
  */
 const router = express.Router();
 router.get("/", Category.read);
-/*
-router.route("/").post(validate(BrandValidation.create), Brands.create);
-router.route("/:id").delete(Checker.IdChecker, Brands.deleted);
-router.route("/:id").get(Checker.IdChecker, Brands.readOne);
-router.route("/:id").patch(Checker.IdChecker, validate(BrandValidation.update), Brands.update); */
+router.route("/").post(validate(CategoryValidation.create), Category.create);
+router.route("/:id").delete(Checker.IdChecker, Category.deleted);
+router.route("/:id").get(Checker.IdChecker, Category.readOne);
+router.route("/:id").patch(Checker.IdChecker, validate(CategoryValidation.update), Category.update);
 
 module.exports = router;
