@@ -11,6 +11,7 @@ const CategorySchema = sequelize.define("categories", {
     },
     parent_id: {
         type: DataTypes.INTEGER,
+        defaultValue: 0,
     },
     name: {
         type: DataTypes.STRING(25),

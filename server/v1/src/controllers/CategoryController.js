@@ -1,32 +1,31 @@
 const httpStatus = require("http-status");
-const { imageUpload } = require("../scripts/utils/helper");
-const BrandService = require("../services/BrandService");
+const CategoryService = require("../services/CategoryService");
 const ApiError = require("../errors/ApiErrors");
 
-class BrandController {
+class CategoryController {
 
     read(req, res) {
-        BrandService.readed()
+        CategoryService.readed()
             .then((response) => {res.status(httpStatus.OK).send(response);})
             .catch((error) => {res.status(httpStatus.BAD_REQUEST).send(error);});
     }
 
     readOne(req, res){
-        BrandService.readedOne(req.params.id)
+        CategoryService.readedOne(req.params.id)
             .then((response) => {res.status(httpStatus.OK).send(response)})
             .catch((error) => { res.status(httpStatus.BAD_REQUEST).send(error);});
     }
 
     async create(req, res){
         if(req?.files?.image) req.body.image_name = await imageUpload(req?.files?.image, "brands");
-        BrandService.created(req.body)
+        CategoryService.created(req.body)
             .then(() => {res.status(httpStatus.CREATED).send({success:true, message:'Kayıt Yapıldı'})})
             .catch((error) => {res.status(httpStatus.OK).send(error);});
     }
 
     async update(req, res, next) {
         if (req?.files?.image) req.body.image_name = await imageUpload(req?.files?.image, "brands");
-        BrandService.updated(req.body, req.params.id)
+        CategoryService.updated(req.body, req.params.id)
             .then((response) => {
                 if(!response[0]){
                     return next(new ApiError("Kayıt bulunamadı", httpStatus.NOT_FOUND));
@@ -37,10 +36,10 @@ class BrandController {
     }
 
     deleted(req, res){
-        BrandService.deleted(req.params.id)
+        CategoryService.deleted(req.params.id)
             .then((response) => {res.status(httpStatus.OK).send({success:true, message:'Kayıt Silindi'})})
             .catch((error) => {res.status(httpStatus.OK).send(error);});
     }
 }
 
-module.exports = new BrandController();
+module.exports = new CategoryController();

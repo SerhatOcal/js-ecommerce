@@ -6,7 +6,8 @@ const Category = require("../controllers/CategoryController");
 /* const Authentication = require("../middlewares/Authentication");
  */
 const router = express.Router();
-/* router.get("/", Brands.read);
+router.get("/", Category.read);
+/*
 router.route("/").post(validate(BrandValidation.create), Brands.create);
 router.route("/:id").delete(Checker.IdChecker, Brands.deleted);
 router.route("/:id").get(Checker.IdChecker, Brands.readOne);

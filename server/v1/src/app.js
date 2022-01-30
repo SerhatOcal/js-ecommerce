@@ -6,7 +6,7 @@ const config = require("./config");
 const loaders = require("./loaders");
 const events = require("./scripts/events");
 const errorHandler = require("./middlewares/errorHendler");
-const { BrandRoutes, UserRoutes } = require("./routes");
+const { BrandRoutes, UserRoutes, CategoryRoutes } = require("./routes");
 
 config();
 loaders();
@@ -29,8 +29,9 @@ app.use(function(req, res, next) {
 
 app.listen(process.env.APP_PORT, () => {
     console.log("Sunucu Başlatıldı...");
-    app.use("/brands", BrandRoutes);
     app.use("/users", UserRoutes);
+    app.use("/brands", BrandRoutes);
+    app.use("/categories", CategoryRoutes);
     
     app.use((req, res, next) => {
         const error = new Error("Sayfa Bulunamadı");
