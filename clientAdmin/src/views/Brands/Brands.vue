@@ -16,7 +16,6 @@
 
 				<DataTable
                     class="p-datatable-customers"
-                    ref="dt" 
                     dataKey="id"
                     currentPageReportTemplate=" Kayıt Sayısı {totalRecords} " 
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown" 
@@ -50,12 +49,12 @@
                             <i v-else class="pi pi-image" style="font-size:2rem"></i>
                         </template>
 					</Column>
-                    <Column field="markaAdi" header="MARKA ADI" :sortable="true">
+                    <Column field="name" header="MARKA ADI" :sortable="true">
 						<template #body="slotProps">
 							{{slotProps.data.name}}
 						</template>
 					</Column>
-                    <Column field="siraNo" header="SIRA NO" :sortable="true">
+                    <Column field="sort" header="SIRA NO" :sortable="true">
                         <template #body="slotProps">
 							{{slotProps.data.sort}}
 						</template>
@@ -70,7 +69,7 @@
                             {{this.moment(slotProps.data.updatedAt).format('L LT')}}
 						</template>
 					</Column>
-					<Column field="islemler" header="İŞLEMLER">
+					<Column field="transactions" header="İŞLEMLER">
 						<template #body="slotProps">
                             <router-link :to="{ name: 'edit-brand', params: { id: slotProps.data.id } }">
                                 <Button icon="pi pi-pencil" class="p-button-outlined p-button-success mr-2"/>
@@ -94,7 +93,7 @@
 				<Dialog v-model:visible="data.deleteDialogAll" :style="{width: '450px'}" header="Bildirim" :modal="true">
 					<div class="flex align-items-center justify-content-center">
 						<i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-						<span v-if="data.brand">Seçilen ürünleri silmek istediğinizden emin misiniz?</span>
+						<span v-if="data.brand">Seçilen markaları silmek istediğinizden emin misiniz?</span>
 					</div>
 					<template #footer>
 						<Button label="Vazgeç" icon="pi pi-times" class="p-button-text" @click="data.deleteDialogAll = false, data.selectedBrands=null"/>
