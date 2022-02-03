@@ -1,3 +1,61 @@
+<script setup>
+import { reactive, onMounted } from 'vue';
+import { useRoute} from 'vue-router';
+import { useToast } from 'primevue/usetoast';
+import BrandService from '../../services/BrandService';
+
+const route = useRoute();
+const toast = useToast();
+const brandService = new BrandService();
+
+const data = reactive({
+    home: {
+        icon: 'pi pi-arrow-left', 
+        to: '/brands',
+        label: ' Markalar'
+    },
+    submitted: false,
+    status:false,
+    loading: false,
+    brand: {},
+    id: route.params.id,
+});
+
+onMounted(() => {
+    brandService.getBrand(data.id).then(response => data.brand = response);
+});
+
+const save = () => {
+    data.submitted = true;
+    if(data.brand.name){
+        data.loading = true;
+        let formData = new FormData();
+        formData.append("name", data.brand.name);
+        formData.append("sort", (!data.brand.sort ? 999 : data.brand.sort));
+        formData.append("status", data.brand.status);
+        formData.append("image", data.brand.image);
+
+        brandService.updateBrand(formData,data.id)
+        .then((response) => {
+            if(response.success){
+                toast.add({severity:'success', summary: 'Başarılı', detail: response.message, life: 10000});
+            } else if(response.error) {
+                toast.add({severity:'error', summary: 'Hata', detail: response.error.message, life: 10000});
+            } else {
+                toast.add({severity:'error', summary: 'Hata', detail: response.errors[0].message, life: 10000});
+            }
+        }).finally(() => {
+            data.loading = false;
+            brandService.getBrand(data.id).then(response => data.brand = response);
+        });
+    }
+};
+
+const onUpload = (event) => {
+    data.brand.image = event.files[0];
+}
+</script>
+
 <template>
     <div class="grid p-fluid">
     <Toast/>
@@ -78,64 +136,3 @@
         
 	</div>
 </template>
-
-<script setup>
-import { reactive, onMounted } from 'vue';
-import { useRoute} from 'vue-router';
-import { useToast } from 'primevue/usetoast';
-import BrandService from '../../services/BrandService';
-
-const route = useRoute();
-const toast = useToast();
-const brandService = new BrandService();
-
-const data = reactive({
-    home: {
-        icon: 'pi pi-arrow-left', 
-        to: '/brands',
-        label: ' Markalar'
-    },
-    submitted: false,
-    status:false,
-    loading: false,
-    brand: {},
-    id: route.params.id,
-});
-
-
-onMounted(() => {
-    brandService.getBrand(data.id).then(response => data.brand = response);
-});
-
-const save = () => {
-    data.submitted = true;
-    if(data.brand.name){
-        data.loading = true;
-        let formData = new FormData();
-        formData.append("name", data.brand.name);
-        formData.append("sort", (!data.brand.sort ? 999 : data.brand.sort));
-        formData.append("status", data.brand.status);
-        formData.append("image", data.brand.image);
-
-        brandService.updateBrand(formData,data.id)
-        .then((response) => {
-            if(response.success){
-                toast.add({severity:'success', summary: 'Başarılı', detail: response.message, life: 10000});
-            } else if(response.error) {
-                toast.add({severity:'error', summary: 'Hata', detail: response.error.message, life: 10000});
-            } else {
-                toast.add({severity:'error', summary: 'Hata', detail: response.errors[0].message, life: 10000});
-            }
-        }).finally(() => {
-            data.loading = false;
-            brandService.getBrand(data.id).then(response => data.brand = response);
-        });
-    }
-};
-
-const onUpload = (event) => {
-    data.brand.image = event.files[0];
-}
-
-
-</script>

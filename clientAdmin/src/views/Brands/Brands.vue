@@ -1,3 +1,78 @@
+<script setup>
+import { onMounted, reactive } from 'vue';
+import { FilterMatchMode } from 'primevue/api';
+import { useToast } from 'primevue/usetoast';
+import BrandService from '../../services/BrandService';
+
+const brandService = new BrandService();
+const toast = useToast();
+
+const data = reactive({
+    brands: null,
+    brand: {},
+    filters: {},
+    selectedBrands: null,
+    submitted: false,
+    deleteDialog: false,
+    deleteDialogAll: false,
+});
+
+onMounted(() => {
+    brandService.getBrands().then(response => data.brands = response);
+});
+
+const confirmDeleteBrand = (brand) => {
+    data.brand = brand;
+	data.deleteDialog = true;
+};
+
+const deleteBrand = () => {
+    brandService.deleteBrand(data.brand.id).then((response) => {
+        if(response.success){
+            toast.add({severity:'success', summary: 'Başarılı', detail: response.message, life: 10000});
+        } else if(response.error) {
+            toast.add({severity:'error', summary: 'Hata', detail: response.error.message, life: 10000});
+        } else {
+            toast.add({severity:'error', summary: 'Hata', detail: response.errors[0].message, life: 10000});
+        }
+    }).finally(() => {
+        data.deleteDialog = false;
+        brandService.getBrands().then(response => data.brands = response);
+    });
+};
+
+const confirmDeleteSelectedAll = () => {
+    data.deleteDialogAll = true;
+};
+
+const deleteBrands = () => {
+    let count = 0;
+    data.selectedBrands.forEach((brand) => {
+        count++;
+        brandService.deleteBrand(brand.id).then((response) => {
+            if(response.error) {
+                toast.add({severity:'error', summary: 'Hata', detail: response.error.message, life: 10000});
+            }
+            if(response.errors){
+                toast.add({severity:'error', summary: 'Hata', detail: response.errors[0].message, life: 10000});
+            }
+        }).finally(() => {
+            data.deleteDialogAll = false;
+            brandService.getBrands().then(response => data.brands = response);
+        });
+    });
+    toast.add({severity:'success', summary: 'Başarılı', detail: `${count} Kayıt Silindi`, life: 10000});
+    count = 0;
+};
+
+const initFilters = () => {
+    data.filters = {
+        'name': {value: data.brand.name, matchMode: FilterMatchMode.STARTS_WITH},
+    }
+}
+initFilters();
+
+</script>
 <template>
 	<div class="grid">
 		<div class="col-12">
@@ -104,79 +179,3 @@
 		</div>
 	</div>
 </template>
-
-<script setup>
-import { onMounted, reactive } from 'vue';
-import { FilterMatchMode } from 'primevue/api';
-import { useToast } from 'primevue/usetoast';
-import BrandService from '../../services/BrandService';
-
-const brandService = new BrandService();
-const toast = useToast();
-
-const data = reactive({
-    brands: null,
-    brand: {},
-    filters: {},
-    selectedBrands: null,
-    submitted: false,
-    deleteDialog: false,
-    deleteDialogAll: false,
-});
-
-onMounted(() => {
-    brandService.getBrands().then(response => data.brands = response);
-});
-
-const confirmDeleteBrand = (brand) => {
-    data.brand = brand;
-	data.deleteDialog = true;
-};
-
-const deleteBrand = () => {
-    brandService.deleteBrand(data.brand.id).then((response) => {
-        if(response.success){
-            toast.add({severity:'success', summary: 'Başarılı', detail: response.message, life: 10000});
-        } else if(response.error) {
-            toast.add({severity:'error', summary: 'Hata', detail: response.error.message, life: 10000});
-        } else {
-            toast.add({severity:'error', summary: 'Hata', detail: response.errors[0].message, life: 10000});
-        }
-    }).finally(() => {
-        data.deleteDialog = false;
-        brandService.getBrands().then(response => data.brands = response);
-    });
-};
-
-const confirmDeleteSelectedAll = () => {
-    data.deleteDialogAll = true;
-};
-
-const deleteBrands = () => {
-    let count = 0;
-    data.selectedBrands.forEach((brand) => {
-        count++;
-        brandService.deleteBrand(brand.id).then((response) => {
-            if(response.error) {
-                toast.add({severity:'error', summary: 'Hata', detail: response.error.message, life: 10000});
-            }
-            if(response.errors){
-                toast.add({severity:'error', summary: 'Hata', detail: response.errors[0].message, life: 10000});
-            }
-        }).finally(() => {
-            data.deleteDialogAll = false;
-            brandService.getBrands().then(response => data.brands = response);
-        });
-    });
-    toast.add({severity:'success', summary: 'Başarılı', detail: `${count} Kayıt Silindi`, life: 10000});
-    count = 0;
-};
-
-const initFilters = () => {
-    data.filters = {
-        'name': {value: data.brand.name, matchMode: FilterMatchMode.STARTS_WITH},
-    }
-}
-initFilters();
-
-</script>

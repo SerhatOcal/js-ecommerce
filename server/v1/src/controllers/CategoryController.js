@@ -16,15 +16,13 @@ class CategoryController {
             .catch((error) => { res.status(httpStatus.BAD_REQUEST).send(error);});
     }
 
-    async create(req, res){
-        if(req?.files?.image) req.body.image_name = await imageUpload(req?.files?.image, "brands");
+    create(req, res){
         CategoryService.created(req.body)
             .then(() => {res.status(httpStatus.CREATED).send({success:true, message:'Kayıt Yapıldı'})})
             .catch((error) => {res.status(httpStatus.OK).send(error);});
     }
 
-    async update(req, res, next) {
-        if (req?.files?.image) req.body.image_name = await imageUpload(req?.files?.image, "brands");
+    update(req, res, next) {
         CategoryService.updated(req.body, req.params.id)
             .then((response) => {
                 if(!response[0]){

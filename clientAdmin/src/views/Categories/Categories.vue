@@ -6,10 +6,10 @@
 				<Toolbar class="mb-4">
 					<template v-slot:start>
 						<div class="my-2">
-                            <router-link to="/brands/add">
+                            <router-link to="/categories/add">
                                 <Button label="Kategori Ekle" icon="pi pi-plus" class="p-button-success mr-2"/>
                             </router-link>
-							<Button label="Sil" icon="pi pi-trash" class="p-button-danger mr-2" @click="confirmDeleteSelectedAll()" :disabled="!data.selectedCategories || !data.selectedCategories.length" />
+							<Button label="Sil" icon="pi pi-trash" class="p-button-danger mr-2" @click="confirmDeleteSelectedAll()" :disabled="!data.selectedCategories" />
                             <Button label="Kategori Ağacı" icon="pi pi-sitemap" class="p-button-warning mr-2"/>
                         </div>
 					</template>
@@ -66,7 +66,7 @@
 					</Column>
 					<Column field="transactions" header="İŞLEMLER">
 						<template #body="slotProps">
-                            <router-link :to="{ name: 'edit-brand', params: { id: slotProps.data.id } }">
+                            <router-link :to="{ name: 'edit-category', params: { id: slotProps.data.id } }">
                                 <Button icon="pi pi-pencil" class="p-button-outlined p-button-success mr-2"/>
                             </router-link>
 							<Button icon="pi pi-trash" class="p-button-outlined p-button-danger" @click="confirmDeleteCategory(slotProps.data)" />
@@ -77,7 +77,7 @@
 				<Dialog v-model:visible="data.deleteDialog" :style="{width: '450px'}" header="Bildirim" :modal="true">
 					<div class="flex align-items-center justify-content-center">
 						<i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-						<span v-if="data.category"><b>{{data.category.name}}</b> Kategoriyi silmek istediğinizden emin misiniz?</span>
+						<span v-if="data.category"><b>{{data.category.name}}</b> Kategorisini silmek istediğinizden emin misiniz?</span>
 					</div>
 					<template #footer>
 						<Button label="Vazgeç" icon="pi pi-times" class="p-button-text" @click="data.deleteDialog = false"/>
@@ -88,7 +88,7 @@
 				<Dialog v-model:visible="data.deleteDialogAll" :style="{width: '450px'}" header="Bildirim" :modal="true">
 					<div class="flex align-items-center justify-content-center">
 						<i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-						<span v-if="data.category">Seçilen kategorisini silmek istediğinizden emin misiniz?</span>
+						<span v-if="data.category">Seçilen kategorileri silmek istediğinizden emin misiniz?</span>
 					</div>
 					<template #footer>
 						<Button label="Vazgeç" icon="pi pi-times" class="p-button-text" @click="data.deleteDialogAll = false, data.selectedCategories=null"/>
@@ -160,6 +160,7 @@ const deleteCategories = () => {
             }
         }).finally(() => {
             data.deleteDialogAll = false;
+            data.selectedCategories = null;
             categoryService.getCategories().then(response => data.categories = response);
         });
     });
